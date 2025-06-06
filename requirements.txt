@@ -1,0 +1,5 @@
+requests
+pysocks
+pillow
+beautifulsoup4
+stem
