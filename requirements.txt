@@ -1,5 +1,5 @@
-requests
-pysocks
+requests~=2.32.3
+pysocks~=1.7.1
 pillow
 beautifulsoup4
 stem
