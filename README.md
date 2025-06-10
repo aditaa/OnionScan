@@ -40,7 +40,7 @@ Requirements:
 ## 🧪 Usage
 
 ```bash
-python onionscan.py http://somedomain.onion --timeout 15 --output scan.json
+python main.py http://somedomain.onion --timeout 15 --output scan.json
 ```
 
 Options:
