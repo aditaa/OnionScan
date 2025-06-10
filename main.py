@@ -22,14 +22,23 @@ def fetch_html_via_tor(url, timeout=10):
         return None, str(e)
 
 def check_common_files(onion_url, timeout=10):
-    paths = ["/robots.txt", "/.git/HEAD", "/.env", "/admin", "/config.php", "/server-status"]
+    paths = [
+        "/robots.txt",
+        "/.git/HEAD",
+        "/.env",
+        "/admin",
+        "/config.php",
+        "/server-status",
+    ]
+    parsed = urlparse(onion_url)
+    base = f"{parsed.scheme}://{parsed.netloc}"
     findings = []
     for path in paths:
         try:
-            res = requests.get(onion_url.rstrip("/") + path, timeout=timeout)
+            res = requests.get(urljoin(base, path), timeout=timeout)
             if res.status_code == 200:
                 findings.append({"path": path, "status": res.status_code})
-        except:
+        except Exception:
             continue
     return findings
 
