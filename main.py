@@ -1,27 +1,41 @@
-import requests
-import socks
+"""Tools for scanning and analyzing Tor onion services."""
+
+import os
 import socket
 import ssl
-import os
 import json
 import re
 import hashlib
-from urllib.parse import urlparse, urljoin
-from PIL import Image
 from io import BytesIO
+from urllib.parse import urlparse, urljoin
+
+import requests
+import socks
+from PIL import Image
 from bs4 import BeautifulSoup
+import stem
 import stem.descriptor.remote
 
 def fetch_html_via_tor(url, timeout=10):
-    socks.set_default_proxy(socks.SOCKS5, os.getenv("TOR_PROXY_HOST", "127.0.0.1"), int(os.getenv("TOR_PROXY_PORT", 9050)))
+    """Return HTML and headers from the URL via the Tor proxy."""
+
+    socks.set_default_proxy(
+        socks.SOCKS5,
+        os.getenv("TOR_PROXY_HOST", "127.0.0.1"),
+        int(os.getenv("TOR_PROXY_PORT", "9050")),
+    )
     socket.socket = socks.socksocket
     try:
-        response = requests.get(url, timeout=timeout, headers={"User-Agent": "Mozilla/5.0"})
+        response = requests.get(
+            url, timeout=timeout, headers={"User-Agent": "Mozilla/5.0"}
+        )
         return response.text, response.headers
-    except Exception as e:
-        return None, str(e)
+    except requests.RequestException as exc:
+        return None, str(exc)
 
 def check_common_files(onion_url, timeout=10):
+    """Check for common sensitive files on the onion service."""
+
     paths = [
         "/robots.txt",
         "/.git/HEAD",
@@ -38,11 +52,13 @@ def check_common_files(onion_url, timeout=10):
             res = requests.get(urljoin(base, path), timeout=timeout)
             if res.status_code == 200:
                 findings.append({"path": path, "status": res.status_code})
-        except Exception:
+        except requests.RequestException:
             continue
     return findings
 
 def extract_cert_info(host, timeout=10):
+    """Retrieve TLS certificate information for a host."""
+
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
@@ -56,17 +72,22 @@ def extract_cert_info(host, timeout=10):
                     "notBefore": cert.get("notBefore"),
                     "notAfter": cert.get("notAfter")
                 }
-    except Exception as e:
-        return {"error": str(e)}
+    except (OSError, ssl.SSLError) as exc:
+        return {"error": str(exc)}
 
 def scan_banner(host, port, label, timeout=10):
+    """Fetch the service banner for a given port."""
+
     try:
         with socket.create_connection((host, port), timeout=timeout) as sock:
-            return {f"{label}_banner": sock.recv(1024).decode(errors="ignore").strip()}
-    except Exception as e:
-        return {"error": str(e)}
+            banner = sock.recv(1024).decode(errors="ignore").strip()
+            return {f"{label}_banner": banner}
+    except OSError as exc:
+        return {"error": str(exc)}
 
 def scan_protocols(host, timeout=10):
+    """Scan common service ports and return collected banners."""
+
     ports = {
         "ssh": 22,
         "ftp": 21,
@@ -75,29 +96,52 @@ def scan_protocols(host, timeout=10):
         "bitcoin": 8333,
         "irc": 6667,
         "vnc": 5900,
-        "mongodb": 27017
+        "mongodb": 27017,
     }
-    return {f"{label}_info": scan_banner(host, port, label, timeout) for label, port in ports.items()}
+    return {
+        f"{label}_info": scan_banner(host, port, label, timeout)
+        for label, port in ports.items()
+    }
 
 def extract_metadata(headers):
-    return {k: v for k, v in headers.items() if k.lower() in ["server", "x-powered-by"]}
+    """Return a subset of response headers with interesting metadata."""
+
+    return {
+        k: v
+        for k, v in headers.items()
+        if k.lower() in ["server", "x-powered-by"]
+    }
 
 def extract_onion_links(html):
+    """Extract .onion hyperlinks from HTML."""
+
     soup = BeautifulSoup(html, "html.parser")
-    return list({a['href'] for a in soup.find_all('a', href=True) if ".onion" in a['href']})
+    return list({a["href"] for a in soup.find_all("a", href=True) if ".onion" in a["href"]})
 
 def extract_bitcoin_addresses(html):
+    """Find Bitcoin addresses embedded in the HTML."""
+
     return re.findall(r"[13][a-km-zA-HJ-NP-Z1-9]{25,34}", html)
 
 def extract_pgp_keys(html):
-    return re.findall(r"-----BEGIN PGP PUBLIC KEY BLOCK-----.*?-----END PGP PUBLIC KEY BLOCK-----", html, re.DOTALL)
+    """Extract PGP public key blocks from the HTML."""
+
+    return re.findall(
+        r"-----BEGIN PGP PUBLIC KEY BLOCK-----.*?-----END PGP PUBLIC KEY BLOCK-----",
+        html,
+        re.DOTALL,
+    )
 
 def extract_emails_and_ids(html):
+    """Return emails and Google Analytics identifiers found in the HTML."""
+
     emails = re.findall(r"[\w.-]+@[\w.-]+", html)
     ga_ids = re.findall(r"UA-\d+-\d+", html)
     return {"emails": emails, "google_analytics_ids": ga_ids}
 
 def extract_exif_data_from_images(html, base_url, timeout=5):
+    """Download images in the page and return any EXIF metadata found."""
+
     soup = BeautifulSoup(html, "html.parser")
     results = []
     for img in soup.find_all("img"):
@@ -110,14 +154,18 @@ def extract_exif_data_from_images(html, base_url, timeout=5):
                 exif = image.getexif()
                 if exif:
                     results.append({"src": full_url, "exif": dict(exif)})
-            except:
+            except (requests.RequestException, OSError):
                 continue
     return results
 
 def html_fingerprint(html):
+    """Return a SHA-1 hash of the HTML content."""
+
     return hashlib.sha1(html.encode()).hexdigest()
 
-def fetch_tor_descriptor(onion):
+def fetch_tor_descriptor():
+    """Fetch the first available Tor relay descriptor."""
+
     try:
         desc = list(stem.descriptor.remote.get_server_descriptors())[0]
         return {
@@ -126,10 +174,12 @@ def fetch_tor_descriptor(onion):
             "platform": desc.platform,
             "contact": desc.contact,
         }
-    except Exception as e:
-        return {"error": str(e)}
+    except stem.DescriptorUnavailable as exc:  # type: ignore[attr-defined]
+        return {"error": str(exc)}
 
 def scan_service(onion_url, timeout=10):
+    """Run a series of checks against the given onion service."""
+
     result = {
         "url": onion_url,
         "errors": [],
@@ -158,15 +208,15 @@ def scan_service(onion_url, timeout=10):
     result["emails_and_ids"] = extract_emails_and_ids(html)
     result["exif_data"] = extract_exif_data_from_images(html, onion_url, timeout)
     result["html_sha1"] = html_fingerprint(html)
-    result["tor_descriptor"] = fetch_tor_descriptor(onion_url)
+    result["tor_descriptor"] = fetch_tor_descriptor()
 
     try:
         hostname = urlparse(onion_url).hostname
         if hostname:
             result["cert_info"] = extract_cert_info(hostname, timeout)
             result.update(scan_protocols(hostname, timeout))
-    except Exception as e:
-        result["errors"].append(f"Protocol scan error: {str(e)}")
+    except (OSError, ssl.SSLError) as exc:
+        result["errors"].append(f"Protocol scan error: {str(exc)}")
 
     return result
 
@@ -182,19 +232,19 @@ if __name__ == "__main__":
 
     urls = []
     if args.onion.endswith(".txt") and os.path.exists(args.onion):
-        with open(args.onion, "r") as file:
+        with open(args.onion, "r", encoding="utf-8") as file:
             urls = [line.strip() for line in file.readlines() if line.strip()]
     else:
         urls = [args.onion]
 
     all_results = {}
-    for url in urls:
-        print(f"Scanning: {url}")
-        all_results[url] = scan_service(url, args.timeout)
+    for target_url in urls:
+        print(f"Scanning: {target_url}")
+        all_results[target_url] = scan_service(target_url, args.timeout)
 
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(output_path, 'w') as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(all_results, f, indent=2)
     print(f"Report saved to {output_path}")
