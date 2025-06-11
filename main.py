@@ -194,14 +194,17 @@ def fetch_tor_descriptor():
     """Fetch the first available Tor relay descriptor."""
 
     try:
-        desc = list(stem.descriptor.remote.get_server_descriptors())[0]
+        descriptors = list(stem.descriptor.remote.get_server_descriptors())
+        if not descriptors:
+            raise IndexError("no descriptors")
+        desc = descriptors[0]
         return {
             "nickname": desc.nickname,
             "published": str(desc.published),
             "platform": desc.platform,
             "contact": desc.contact,
         }
-    except stem.DescriptorUnavailable as exc:  # type: ignore[attr-defined]
+    except (stem.DescriptorUnavailable, IndexError) as exc:  # type: ignore[attr-defined]
         return {"error": str(exc)}
 
 
