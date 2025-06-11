@@ -9,32 +9,29 @@ import hashlib
 from io import BytesIO
 from urllib.parse import urlparse, urljoin
 
+from functools import lru_cache
+
 import requests
 from PIL import Image, UnidentifiedImageError
 from bs4 import BeautifulSoup
 import stem
 import stem.descriptor.remote
-from functools import lru_cache
-
-_TOR_SESSION = None
 
 
+@lru_cache(maxsize=1)
 def get_tor_session():
     """Return a requests session configured to use the Tor SOCKS proxy."""
 
-    global _TOR_SESSION
-    if _TOR_SESSION is None:
-        host = os.getenv("TOR_PROXY_HOST", "127.0.0.1")
-        port = os.getenv("TOR_PROXY_PORT", "9050")
-        session = requests.Session()
-        proxies = {
-            "http": f"socks5h://{host}:{port}",
-            "https": f"socks5h://{host}:{port}",
-        }
-        session.proxies.update(proxies)
-        session.headers.update({"User-Agent": "Mozilla/5.0"})
-        _TOR_SESSION = session
-    return _TOR_SESSION
+    host = os.getenv("TOR_PROXY_HOST", "127.0.0.1")
+    port = os.getenv("TOR_PROXY_PORT", "9050")
+    session = requests.Session()
+    proxies = {
+        "http": f"socks5h://{host}:{port}",
+        "https": f"socks5h://{host}:{port}",
+    }
+    session.proxies.update(proxies)
+    session.headers.update({"User-Agent": "Mozilla/5.0"})
+    return session
 
 
 def fetch_html_via_tor(url, timeout=10):
