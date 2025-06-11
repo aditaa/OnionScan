@@ -9,12 +9,12 @@ import hashlib
 from io import BytesIO
 from urllib.parse import urlparse, urljoin
 
+from functools import lru_cache
 import requests
 from PIL import Image, UnidentifiedImageError
 from bs4 import BeautifulSoup
 import stem
 import stem.descriptor.remote
-from functools import lru_cache
 
 _TOR_SESSION = None
 
@@ -22,7 +22,7 @@ _TOR_SESSION = None
 def get_tor_session():
     """Return a requests session configured to use the Tor SOCKS proxy."""
 
-    global _TOR_SESSION
+    global _TOR_SESSION  # pylint: disable=global-statement
     if _TOR_SESSION is None:
         host = os.getenv("TOR_PROXY_HOST", "127.0.0.1")
         port = os.getenv("TOR_PROXY_PORT", "9050")
