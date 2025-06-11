@@ -2,6 +2,8 @@
 
 Welcome to the project wiki! This page provides an overview of the repository, how it is structured and how to get started using the tool.
 
+For a more detailed walkthrough of the code itself, see the [Codebase Overview](CodebaseOverview.md) page.
+
 ## Repository Structure
 
 ```
