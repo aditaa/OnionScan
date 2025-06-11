@@ -93,3 +93,24 @@ def test_extract_exif_data_from_images(monkeypatch):
 
     result = main.extract_exif_data_from_images(html, "http://a.onion")
     assert result == [{"src": "http://a.onion/img.png", "exif": {1: 2}}]
+
+
+def test_get_tor_session_defaults(monkeypatch):
+    """Default proxy values are used when env vars are absent or empty."""
+    calls = []
+
+    class FakeSession:  # pylint: disable=too-few-public-methods
+        def __init__(self):
+            calls.append(1)
+            self.proxies = {}
+            self.headers = {}
+
+    monkeypatch.setattr(main.requests, "Session", lambda: FakeSession())
+    monkeypatch.delenv("TOR_PROXY_HOST", raising=False)
+    monkeypatch.delenv("TOR_PROXY_PORT", raising=False)
+    main._TOR_SESSION = None  # pylint: disable=protected-access
+
+    session = main.get_tor_session()
+
+    assert session.proxies["http"] == "socks5h://127.0.0.1:9050"
+    assert len(calls) == 1

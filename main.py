@@ -24,8 +24,8 @@ def get_tor_session():
 
     global _TOR_SESSION  # pylint: disable=global-statement
     if _TOR_SESSION is None:
-        host = os.getenv("TOR_PROXY_HOST", "127.0.0.1")
-        port = os.getenv("TOR_PROXY_PORT", "9050")
+        host = os.getenv("TOR_PROXY_HOST") or "127.0.0.1"
+        port = os.getenv("TOR_PROXY_PORT") or "9050"
         session = requests.Session()
         proxies = {
             "http": f"socks5h://{host}:{port}",
