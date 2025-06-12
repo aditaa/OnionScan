@@ -69,3 +69,19 @@ def test_fetch_tor_descriptor_cached(monkeypatch):
     main.fetch_tor_descriptor()
     main.fetch_tor_descriptor()
     assert len(calls) == 1
+
+
+def test_fetch_tor_descriptor_empty(monkeypatch):
+    """Function should return an error if no descriptors are fetched."""
+
+    def fake_get_server_descriptors():
+        return []
+
+    monkeypatch.setattr(
+        main.stem.descriptor.remote,
+        "get_server_descriptors",
+        fake_get_server_descriptors,
+    )
+    main.fetch_tor_descriptor.cache_clear()
+    result = main.fetch_tor_descriptor()
+    assert "error" in result
