@@ -43,6 +43,10 @@ Requirements:
 python main.py http://somedomain.onion --timeout 15 --output scan.json
 ```
 
+The script looks for `TOR_PROXY_HOST` and `TOR_PROXY_PORT` environment
+variables to configure the SOCKS proxy. If they are not set, it defaults to
+`127.0.0.1` and port `9050`. If `TOR_PROXY_PORT` is non-numeric, `9050` is used.
+
 Options:
 
 * `--timeout` — custom timeout in seconds (default: 10)

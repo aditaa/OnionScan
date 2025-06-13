@@ -17,12 +17,26 @@ import stem
 import stem.descriptor.remote
 
 
+def _get_proxy_config():
+    """Return Tor proxy host and port, falling back to defaults."""
+
+    host = os.environ.get("TOR_PROXY_HOST")
+    port = os.environ.get("TOR_PROXY_PORT")
+
+    if not host:
+        host = "127.0.0.1"
+
+    if not port or not str(port).isdigit():
+        port = "9050"
+
+    return host, port
+
+
 @lru_cache(maxsize=1)
 def get_tor_session():
     """Return a requests session configured to use the Tor SOCKS proxy."""
 
-    host = os.getenv("TOR_PROXY_HOST", "127.0.0.1")
-    port = os.getenv("TOR_PROXY_PORT", "9050")
+    host, port = _get_proxy_config()
     session = requests.Session()
     proxies = {
         "http": f"socks5h://{host}:{port}",

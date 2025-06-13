@@ -52,6 +52,9 @@ python main.py http://somedomain.onion --timeout 15 --output scan.json
 * `--output` specifies the JSON file to write results to (default: `scan_report.json`)
 
 Make sure you have a Tor SOCKS proxy running locally, typically on `127.0.0.1:9050`.
+The proxy address can also be customized via the `TOR_PROXY_HOST` and
+`TOR_PROXY_PORT` environment variables. If `TOR_PROXY_PORT` is not numeric,
+`9050` is used.
 
 ## Next Steps
 
