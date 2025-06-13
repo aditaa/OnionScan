@@ -1,4 +1,4 @@
-"""Tests for extractor helper functions."""
+"""Tests for HTML extraction helpers."""
 
 from main import (
     html_fingerprint,
@@ -11,21 +11,21 @@ from main import (
 
 
 def test_html_fingerprint():
-    """HTML fingerprint is computed using SHA-1."""
+    """SHA1 fingerprint should match expected hash."""
     html = "<html><body>Hello World</body></html>"
     expected = "d54b7b623983de5b6880519382f60059f00539d4"
     assert html_fingerprint(html) == expected
 
 
 def test_extract_onion_links():
-    """Only .onion links are returned."""
+    """Only .onion links should be returned."""
     html = '<a href="http://abc.onion/page">link</a><a href="https://example.com">x</a>'
     links = extract_onion_links(html)
     assert links == ["http://abc.onion/page"]
 
 
 def test_extract_bitcoin_addresses():
-    """Detect Bitcoin addresses in HTML."""
+    """Bitcoin addresses are detected in text."""
     html = "Donate: 1BoatSLRHtKNngkdXEeobR76b53LETtpyT and 3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy"
     addrs = extract_bitcoin_addresses(html)
     assert "1BoatSLRHtKNngkdXEeobR76b53LETtpyT" in addrs
@@ -33,7 +33,7 @@ def test_extract_bitcoin_addresses():
 
 
 def test_extract_pgp_keys():
-    """Extract embedded PGP public keys."""
+    """PGP key blocks are extracted."""
     block = (
         "-----BEGIN PGP PUBLIC KEY BLOCK-----\nabc\n-----END PGP PUBLIC KEY BLOCK-----"
     )
@@ -43,7 +43,7 @@ def test_extract_pgp_keys():
 
 
 def test_extract_emails_and_ids():
-    """Collect emails and Google Analytics IDs."""
+    """Emails and Google Analytics IDs are extracted."""
     html = "Email me at user@example.com UA-1234-5"
     result = extract_emails_and_ids(html)
     assert result["emails"] == ["user@example.com"]
@@ -51,7 +51,7 @@ def test_extract_emails_and_ids():
 
 
 def test_extract_metadata():
-    """Filter headers for metadata of interest."""
+    """Only relevant headers are kept."""
     headers = {"Server": "Apache", "X-Powered-By": "PHP", "Other": "value"}
     meta = extract_metadata(headers)
     assert meta == {"Server": "Apache", "X-Powered-By": "PHP"}
