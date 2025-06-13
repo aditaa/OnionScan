@@ -1,7 +1,5 @@
 """Tests for the main scanning workflow."""
 
-from types import SimpleNamespace
-
 import main
 
 
@@ -51,10 +49,18 @@ def test_fetch_tor_descriptor_cached(monkeypatch):
     calls = []
 
     def fake_get_server_descriptors():
+        """Return a single descriptor-like object."""
+
+        class Desc:  # pylint: disable=too-few-public-methods
+            """Minimal stub for a server descriptor."""
+
+            nickname = "x"
+            published = "now"
+            platform = "p"
+            contact = "c"
+
         calls.append(1)
-        return [
-            SimpleNamespace(nickname="x", published="now", platform="p", contact="c")
-        ]
+        return [Desc]
 
     monkeypatch.setattr(
         main.stem.descriptor.remote,
