@@ -31,6 +31,41 @@ def test_get_tor_session_singleton(monkeypatch):
     assert len(calls) == 1
 
 
+def test_get_tor_session_defaults(monkeypatch):
+    """Defaults are used when env vars are missing."""
+
+    class FakeSession:  # pylint: disable=too-few-public-methods
+        """Simple session stand-in."""
+
+        def __init__(self):
+            self.proxies = {}
+            self.headers = {}
+
+    def fake_session():
+        return FakeSession()
+
+    monkeypatch.setattr(main.requests, "Session", fake_session)
+    monkeypatch.delenv("TOR_PROXY_HOST", raising=False)
+    monkeypatch.delenv("TOR_PROXY_PORT", raising=False)
+    main._TOR_SESSION = None  # pylint: disable=protected-access
+
+    session = main.get_tor_session()
+
+    assert session.proxies["http"] == "socks5h://127.0.0.1:9050"
+
+
+def test_get_proxy_config_invalid_port(monkeypatch):
+    """Invalid ports revert to the default."""
+
+    monkeypatch.setenv("TOR_PROXY_HOST", "host")
+    monkeypatch.setenv("TOR_PROXY_PORT", "abc")
+
+    host, port = main._get_proxy_config()  # pylint: disable=protected-access
+
+    assert host == "host"
+    assert port == "9050"
+
+
 def test_check_common_files(monkeypatch):
     """Check that known files are detected properly."""
 
