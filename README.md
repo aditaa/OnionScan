@@ -1,6 +1,6 @@
 # PythonOnionScan
 
-[![Tests](https://github.com/OWNER/REPO/actions/workflows/tests.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/tests.yml)
+[![Tests](https://github.com/aditaa/OnionScan/actions/workflows/tests.yml/badge.svg)](https://github.com/aditaa/OnionScan/actions/workflows/tests.yml)
 
 A modern Python3 port of the original [OnionScan](https://github.com/s-rah/onionscan) by [@s-rah](https://github.com/s-rah).
 
