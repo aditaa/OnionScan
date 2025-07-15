@@ -14,6 +14,7 @@ This tool allows you to scan `.onion` hidden services for common misconfiguratio
 * 🔍 Detect common exposed files (`/.git`, `/admin`, etc.)
 * 🛡️ Extract SSL certificate metadata
 * 🧠 Protocol banner scanning (SSH, FTP, SMTP, XMPP, Bitcoin)
+* 🌐 DNS lookups for banners and certificates are routed through the Tor proxy
 * 🔗 Parse and list all linked `.onion` addresses
 * 🪙 Extract embedded Bitcoin addresses
 * 🔐 PGP block scanner

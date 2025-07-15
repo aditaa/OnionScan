@@ -1,7 +1,6 @@
 """Tools for scanning and analyzing Tor onion services."""
 
 import os
-import socket
 import ssl
 import json
 import re
@@ -11,6 +10,7 @@ from urllib.parse import urlparse, urljoin
 
 from functools import lru_cache
 import requests
+import socks
 from PIL import Image, UnidentifiedImageError
 from bs4 import BeautifulSoup
 import stem
@@ -93,8 +93,12 @@ def extract_cert_info(host, timeout=10):
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
+    proxy_host, proxy_port = _get_proxy_config()
     try:
-        with socket.create_connection((host, 443), timeout=timeout) as sock:
+        with socks.socksocket() as sock:
+            sock.set_proxy(socks.SOCKS5, proxy_host, int(proxy_port))
+            sock.settimeout(timeout)
+            sock.connect((host, 443))
             with ctx.wrap_socket(sock, server_hostname=host) as ssock:
                 cert = ssock.getpeercert()
                 return {
@@ -103,15 +107,19 @@ def extract_cert_info(host, timeout=10):
                     "notBefore": cert.get("notBefore"),
                     "notAfter": cert.get("notAfter"),
                 }
-    except (OSError, ssl.SSLError) as exc:
+    except (OSError, ssl.SSLError, socks.ProxyError) as exc:
         return {"error": str(exc)}
 
 
 def scan_banner(host, port, label, timeout=10):
     """Fetch the service banner for a given port."""
 
+    proxy_host, proxy_port = _get_proxy_config()
     try:
-        with socket.create_connection((host, port), timeout=timeout) as sock:
+        with socks.socksocket() as sock:
+            sock.set_proxy(socks.SOCKS5, proxy_host, int(proxy_port))
+            sock.settimeout(timeout)
+            sock.connect((host, port))
             banner = sock.recv(1024).decode(errors="ignore").strip()
             return {f"{label}_banner": banner}
     except OSError as exc:
