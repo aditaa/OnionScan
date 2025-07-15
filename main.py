@@ -1,6 +1,5 @@
 """Tools for scanning and analyzing Tor onion services."""
 
-# pylint: disable=import-error
 import os
 import socket
 import ssl
