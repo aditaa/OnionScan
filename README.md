@@ -25,8 +25,33 @@ This tool allows you to scan `.onion` hidden services for common misconfiguratio
 
 ## 🛠 Installation
 
+PythonOnionScan relies on a local **Tor proxy**. On Debian/Ubuntu you can
+install it with:
+
+```bash
+sudo apt-get install tor
+```
+
+For other operating systems, see the [Tor project documentation](https://www.torproject.org/download/) for setup instructions.
+
 ```bash
 pip install -r requirements.txt
+```
+
+To isolate dependencies, you can create a virtual environment first:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Alternatively, on Debian or Ubuntu systems you can install the
+dependencies using `apt`:
+
+```bash
+sudo apt-get install python3-requests python3-socks \
+    python3-bs4 python3-pil python3-stem
 ```
 
 Requirements:

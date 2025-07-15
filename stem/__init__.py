@@ -1,0 +1,2 @@
+class DescriptorUnavailable(Exception):
+    pass
