@@ -38,6 +38,13 @@ The project requires Python 3. Run the following to install dependencies:
 pip install -r requirements.txt
 ```
 
+Debian/Ubuntu users can install equivalent packages via apt:
+
+```bash
+sudo apt install python3-requests python3-pysocks python3-pil \
+    python3-bs4 python3-stem
+```
+
 This will install `requests`, `BeautifulSoup`, `Stem`, `Pillow` and the PySocks module used for Tor support.
 
 ## Usage

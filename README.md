@@ -30,6 +30,13 @@ This tool allows you to scan `.onion` hidden services for common misconfiguratio
 pip install -r requirements.txt
 ```
 
+On Debian or Ubuntu you can install system packages instead of using `pip`:
+
+```bash
+sudo apt install python3-requests python3-pysocks python3-pil \
+    python3-bs4 python3-stem
+```
+
 Requirements:
 
 * `requests`

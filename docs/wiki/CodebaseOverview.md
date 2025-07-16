@@ -39,6 +39,13 @@ The project targets Python 3. Install the required packages with:
 pip install -r requirements.txt
 ```
 
+On Debian/Ubuntu systems you can install equivalent packages via apt:
+
+```bash
+sudo apt install python3-requests python3-pysocks python3-pil \
+    python3-bs4 python3-stem
+```
+
 Dependencies include `requests`, `PySocks`, `Pillow`, `BeautifulSoup`, and `Stem`.
 
 ## Main Script (`main.py`)
