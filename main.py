@@ -2,7 +2,7 @@
 
 import os
 import ssl
-import json
+from pprint import pprint
 import re
 import hashlib
 from io import BytesIO
@@ -289,13 +289,9 @@ def scan_service(onion_url, timeout=10):
 
 if __name__ == "__main__":
     import argparse
-    from pathlib import Path
 
     parser = argparse.ArgumentParser(description="Python version of OnionScan")
     parser.add_argument("onion", help=".onion URL to scan or path to .txt file of URLs")
-    parser.add_argument(
-        "--output", help="Path to save JSON report", default="scan_report.json"
-    )
     parser.add_argument(
         "--timeout", help="Request timeout in seconds", type=int, default=10
     )
@@ -321,9 +317,4 @@ if __name__ == "__main__":
         print(f"Scanning: {target_url}")
         all_results[target_url] = scan_service(target_url, args.timeout)
 
-    output_path = Path(args.output)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(all_results, f, indent=2)
-    print(f"Report saved to {output_path}")
+    pprint(all_results)

@@ -13,7 +13,7 @@ For a more detailed walkthrough of the code itself, see the [Codebase Overview](
 ├── pyproject.toml    # project metadata
 ├── requirements.txt  # dependencies
 ├── uv.lock           # lock file for uv
-└── scan_report.json  # example scan output
+└── (results are printed to the console)
 ```
 
 All of the scanning features live inside `main.py`. The rest of the files help manage dependencies or document the project.
@@ -52,11 +52,10 @@ This will install `requests`, `BeautifulSoup`, `Stem`, `Pillow` and the PySocks 
 Run a scan against a single hidden service or a text file of URLs:
 
 ```bash
-python main.py http://somedomain.onion --timeout 15 --output scan.json
+python main.py http://somedomain.onion --timeout 15
 ```
 
 * `--timeout` sets the request timeout in seconds (default: 10)
-* `--output` specifies the JSON file to write results to (default: `scan_report.json`)
 
 Make sure you have a Tor SOCKS proxy running locally, typically on `127.0.0.1:9050`.
 The proxy address can also be customized via `--proxy-host` and `--proxy-port`
