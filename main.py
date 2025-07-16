@@ -192,16 +192,25 @@ def extract_exif_data_from_images(html, base_url, timeout=5):
     session = get_tor_session()
     for img in soup.find_all("img"):
         src = img.get("src")
-        if src:
-            try:
-                full_url = urljoin(base_url, src)
-                img_data = session.get(full_url, timeout=timeout).content
-                image = Image.open(BytesIO(img_data))
-                exif = image.getexif()
-                if exif:
-                    results.append({"src": full_url, "exif": dict(exif)})
-            except (requests.RequestException, OSError, UnidentifiedImageError):
-                continue
+        if not src:
+            continue
+        full_url = urljoin(base_url, src)
+        try:
+            img_data = session.get(full_url, timeout=timeout).content
+        except requests.RequestException:
+            continue
+        try:
+            image = Image.open(BytesIO(img_data))
+        except (OSError, UnidentifiedImageError):
+            continue
+        exif = image.getexif()
+        if not exif:
+            continue
+        cleaned = {
+            tag: (val.hex() if isinstance(val, bytes) else val)
+            for tag, val in exif.items()
+        }
+        results.append({"src": full_url, "exif": cleaned})
     return results
 
 
