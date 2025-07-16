@@ -1,7 +1,4 @@
-#scan reports
-scan_report.json
-
-
+# no longer produce scan reports
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

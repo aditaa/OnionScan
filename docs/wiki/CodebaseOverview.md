@@ -11,7 +11,7 @@ This page summarizes the overall structure of the `PythonOnionScan` project and 
 ├── pyproject.toml    # project metadata
 ├── requirements.txt  # dependencies
 ├── uv.lock           # lock file for uv
-└── scan_report.json  # example scan output
+└── (results are printed to the console)
 ```
 
 All scanning functionality lives in **`main.py`**. The remaining files manage dependencies and provide documentation.
@@ -59,12 +59,12 @@ The scanner logic is contained in `main.py`.
    back to `9050`.
 2. **Scanning Helpers** – functions like `check_common_files()` and `scan_protocols()` search for exposed paths and capture banners from common service ports.
 3. **`scan_service()` Workflow** – orchestrates HTML fetching, certificate extraction, protocol checks, and metadata parsing. Results are collected in a dictionary.
-4. **Command-Line Entry** – when invoked directly, the script accepts either a `.onion` URL or a text file of targets. The output is saved to a JSON report.
+4. **Command-Line Entry** – when invoked directly, the script accepts either a `.onion` URL or a text file of targets. Results are printed to the console.
 
 ## Usage
 
 ```bash
-python main.py http://example.onion --timeout 15 --output scan.json
+python main.py http://example.onion --timeout 15
 ```
 
 Run this with a local Tor SOCKS proxy (typically `127.0.0.1:9050`) running.
