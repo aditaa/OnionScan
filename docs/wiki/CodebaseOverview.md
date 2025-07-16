@@ -53,9 +53,10 @@ Dependencies include `requests`, `PySocks`, `Pillow`, `BeautifulSoup`, and `Stem
 The scanner logic is contained in `main.py`.
 
 1. **Tor Connection Setup** – `fetch_html_via_tor()` configures a SOCKS proxy
-   using `TOR_PROXY_HOST` and `TOR_PROXY_PORT` environment variables. When they
-   are unset, defaults of `127.0.0.1` and `9050` are used. A non-numeric
-   `TOR_PROXY_PORT` also falls back to `9050`.
+   using `--proxy-host`/`--proxy-port` or the `TOR_PROXY_HOST` and
+   `TOR_PROXY_PORT` environment variables. When no values are provided, defaults
+   of `127.0.0.1` and `9050` are used. A non-numeric `TOR_PROXY_PORT` also falls
+   back to `9050`.
 2. **Scanning Helpers** – functions like `check_common_files()` and `scan_protocols()` search for exposed paths and capture banners from common service ports.
 3. **`scan_service()` Workflow** – orchestrates HTML fetching, certificate extraction, protocol checks, and metadata parsing. Results are collected in a dictionary.
 4. **Command-Line Entry** – when invoked directly, the script accepts either a `.onion` URL or a text file of targets. The output is saved to a JSON report.
@@ -67,6 +68,8 @@ python main.py http://example.onion --timeout 15 --output scan.json
 ```
 
 Run this with a local Tor SOCKS proxy (typically `127.0.0.1:9050`) running.
+You can point the scanner at a different proxy using `--proxy-host` and
+`--proxy-port` or the matching environment variables.
 
 ## Points of Interest & Next Steps
 
