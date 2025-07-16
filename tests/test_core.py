@@ -66,6 +66,25 @@ def test_get_proxy_config_invalid_port(monkeypatch):
     assert port == "9050"
 
 
+def test_get_proxy_config_cli_override(monkeypatch):
+    """Command-line overrides should take precedence over env vars."""
+
+    monkeypatch.setenv("TOR_PROXY_HOST", "envhost")
+    monkeypatch.setenv("TOR_PROXY_PORT", "1111")
+    monkeypatch.setattr(main, "PROXY_HOST", "cli_host", raising=False)
+    monkeypatch.setattr(main, "PROXY_PORT", "2222", raising=False)
+
+    host, port = main._get_proxy_config()  # pylint: disable=protected-access
+
+    assert host == "cli_host"
+    assert port == "2222"
+
+    monkeypatch.setattr(main, "PROXY_HOST", None, raising=False)
+    monkeypatch.setattr(main, "PROXY_PORT", None, raising=False)
+    monkeypatch.delenv("TOR_PROXY_HOST", raising=False)
+    monkeypatch.delenv("TOR_PROXY_PORT", raising=False)
+
+
 def test_check_common_files(monkeypatch):
     """Check that known files are detected properly."""
 

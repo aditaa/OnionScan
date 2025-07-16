@@ -18,12 +18,16 @@ import stem.descriptor.remote
 
 _TOR_SESSION = None
 
+# Optional override for the Tor proxy address configured via CLI
+PROXY_HOST = None
+PROXY_PORT = None
+
 
 def _get_proxy_config():
     """Return Tor proxy host and port, falling back to defaults."""
 
-    host = os.environ.get("TOR_PROXY_HOST")
-    port = os.environ.get("TOR_PROXY_PORT")
+    host = PROXY_HOST or os.environ.get("TOR_PROXY_HOST")
+    port = PROXY_PORT or os.environ.get("TOR_PROXY_PORT")
 
     if not host:
         host = "127.0.0.1"
@@ -295,7 +299,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--timeout", help="Request timeout in seconds", type=int, default=10
     )
+    parser.add_argument("--proxy-host", help="Tor proxy host")
+    parser.add_argument("--proxy-port", help="Tor proxy port")
     args = parser.parse_args()
+
+    # Override proxy settings if provided on the command line
+    if args.proxy_host:
+        PROXY_HOST = args.proxy_host
+    if args.proxy_port:
+        PROXY_PORT = args.proxy_port
 
     urls = []
     if args.onion.endswith(".txt") and os.path.exists(args.onion):
