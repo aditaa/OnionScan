@@ -2,7 +2,7 @@
 
 import os
 import ssl
-from pprint import pprint
+import json
 import re
 import hashlib
 from io import BytesIO
@@ -319,4 +319,4 @@ if __name__ == "__main__":
         print(f"Scanning: {target_url}")
         all_results[target_url] = scan_service(target_url, args.timeout)
 
-    pprint(all_results)
+    print(json.dumps(all_results, indent=2, ensure_ascii=False, default=str))
