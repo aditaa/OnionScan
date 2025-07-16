@@ -128,3 +128,36 @@ def test_extract_exif_data_from_images(monkeypatch):
 
     result = main.extract_exif_data_from_images(html, "http://a.onion")
     assert result == [{"src": "http://a.onion/img.png", "exif": {1: 2}}]
+
+
+def test_extract_exif_data_bytes(monkeypatch):
+    """Bytes values in EXIF data should be hex encoded."""
+    html = "<img src='img.png'>"
+
+    class FakeSession:  # pylint: disable=too-few-public-methods
+        """Session returning an image."""
+
+        def get(self, _url, timeout=5):  # pylint: disable=unused-argument
+            """Return a fake binary response."""
+
+            class R:  # pylint: disable=too-few-public-methods
+                """Response placeholder."""
+
+                content = b"bytes"
+
+            return R()
+
+    fake_img = type("Img", (), {"getexif": lambda self: {1: b"abc"}})()
+
+    def fake_get_session():
+        return FakeSession()
+
+    monkeypatch.setattr(main, "get_tor_session", fake_get_session)
+
+    def fake_open(*_args, **_kwargs):
+        return fake_img
+
+    monkeypatch.setattr(main.Image, "open", fake_open)
+
+    result = main.extract_exif_data_from_images(html, "http://a.onion")
+    assert result == [{"src": "http://a.onion/img.png", "exif": {1: "616263"}}]
