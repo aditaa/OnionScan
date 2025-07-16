@@ -127,6 +127,8 @@ def scan_banner(host, port, label, timeout=10):
             banner = sock.recv(1024).decode(errors="ignore").strip()
             return {f"{label}_banner": banner}
     except OSError as exc:
+        if "Connection refused" in str(exc):
+            return {"status": "closed"}
         return {"error": str(exc)}
 
 
